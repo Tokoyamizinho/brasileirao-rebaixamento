@@ -1,0 +1,72 @@
+rodada,data,mandante,visitante
+21,,Chapecoense,Vasco
+32,2026-10-23,Cruzeiro,Remo
+32,2026-10-24,Internacional,Botafogo
+32,2026-10-24,Mirassol,São Paulo
+32,2026-10-24,Vitória,Athletico-PR
+32,2026-10-24,Palmeiras,Bragantino
+32,2026-10-24,Vasco,Corinthians
+32,2026-10-24,Chapecoense,Fluminense
+32,2026-10-24,Santos,Bahia
+32,2026-10-26,Coritiba,Grêmio
+32,2026-10-26,Flamengo,Atlético-MG
+33,2026-10-28,Bragantino,Chapecoense
+33,2026-10-28,Fluminense,Internacional
+33,2026-10-28,Santos,Palmeiras
+33,2026-10-28,Bahia,São Paulo
+33,2026-10-28,Remo,Botafogo
+33,2026-10-29,Atlético-MG,Cruzeiro
+33,2026-10-29,Vasco,Flamengo
+33,2026-10-29,Grêmio,Athletico-PR
+33,2026-10-30,Corinthians,Mirassol
+33,2026-10-31,Coritiba,Vitória
+34,2026-11-02,Bragantino,Santos
+34,2026-11-03,Chapecoense,Mirassol
+34,2026-11-03,Internacional,Coritiba
+34,2026-11-04,Athletico-PR,Vasco
+34,2026-11-04,Flamengo,Grêmio
+34,2026-11-04,Botafogo,Atlético-MG
+34,2026-11-04,São Paulo,Corinthians
+34,2026-11-05,Palmeiras,Remo
+34,2026-11-05,Cruzeiro,Bahia
+34,2026-11-06,Vitória,Fluminense
+35,2026-11-18,Corinthians,Botafogo
+35,2026-11-18,Coritiba,Santos
+35,2026-11-18,Cruzeiro,Palmeiras
+35,2026-11-18,Flamengo,Athletico-PR
+35,2026-11-18,Grêmio,Bahia
+35,2026-11-18,Mirassol,Atlético-MG
+35,2026-11-18,Remo,Chapecoense
+35,2026-11-18,São Paulo,Fluminense
+35,2026-11-18,Vasco,Internacional
+35,2026-11-18,Vitória,Bragantino
+36,2026-11-21,Athletico-PR,Remo
+36,2026-11-21,Atlético-MG,Corinthians
+36,2026-11-21,Bahia,Coritiba
+36,2026-11-21,Botafogo,São Paulo
+36,2026-11-21,Bragantino,Vasco
+36,2026-11-21,Chapecoense,Cruzeiro
+36,2026-11-21,Fluminense,Mirassol
+36,2026-11-21,Internacional,Vitória
+36,2026-11-21,Palmeiras,Flamengo
+36,2026-11-21,Santos,Grêmio
+37,2026-11-28,Atlético-MG,Vasco
+37,2026-11-28,Botafogo,Bahia
+37,2026-11-28,Chapecoense,Palmeiras
+37,2026-11-28,Corinthians,Grêmio
+37,2026-11-28,Coritiba,Flamengo
+37,2026-11-28,Fluminense,Cruzeiro
+37,2026-11-28,Internacional,Bragantino
+37,2026-11-28,Mirassol,Athletico-PR
+37,2026-11-28,São Paulo,Remo
+37,2026-11-28,Vitória,Santos
+38,2026-12-02,Athletico-PR,São Paulo
+38,2026-12-02,Bahia,Atlético-MG
+38,2026-12-02,Bragantino,Fluminense
+38,2026-12-02,Cruzeiro,Internacional
+38,2026-12-02,Flamengo,Chapecoense
+38,2026-12-02,Grêmio,Mirassol
+38,2026-12-02,Palmeiras,Coritiba
+38,2026-12-02,Remo,Corinthians
+38,2026-12-02,Santos,Botafogo
+38,2026-12-02,Vasco,Vitória

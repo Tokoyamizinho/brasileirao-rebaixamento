@@ -1,0 +1,20 @@
+{
+  "so_elo": {
+    "max_depth": 1,
+    "n_estimators": 118,
+    "learning_rate": 0.05144795701150437,
+    "min_child_weight": 1.73940931251309,
+    "subsample": 0.5832351322912936,
+    "colsample_bytree": 0.6293104690660232,
+    "reg_lambda": 6.031678754906376
+  },
+  "todas": {
+    "max_depth": 1,
+    "n_estimators": 324,
+    "learning_rate": 0.013518095747229767,
+    "min_child_weight": 20.521229459938105,
+    "subsample": 0.7547056227356298,
+    "colsample_bytree": 0.7466745763278078,
+    "reg_lambda": 0.9632706016897
+  }
+}

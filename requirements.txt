@@ -1,0 +1,13 @@
+# Bibliotecas usadas pelos scripts. Testado com Python 3.13.
+# Instale com:  python -m pip install -r requirements.txt
+pandas>=2.2
+numpy>=2.0
+scikit-learn>=1.5
+joblib>=1.4
+optuna>=4.0        # otimização dos hiperparâmetros do Elo (02 --otimizar) e do XGBoost
+xgboost>=2.1       # etapa 2 (04), não usada na previsão final
+pymc>=5.16         # etapa 3: modelo bayesiano (05)
+nutpie>=0.13       # amostrador rápido para o PyMC, não precisa de compilador C
+arviz>=0.20        # diagnósticos do MCMC
+matplotlib>=3.9    # gráficos dos notebooks
+ipykernel>=6.29    # rodar os notebooks no VS Code / Jupyter

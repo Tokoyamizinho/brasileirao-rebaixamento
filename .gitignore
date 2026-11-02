@@ -1,0 +1,26 @@
+# Gerados a cada execução
+logs/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.vscode/
+
+# Dados baixados: o 01_coleta_dados.py baixa de novo (football-data e GitHub)
+data/raw/
+
+# Intermediários grandes ou refeitos a cada rodada. Ficam no repositório só os
+# parâmetros dos modelos e os resultados que a página e o README citam.
+data/processed/*
+!data/processed/params_elo.json
+!data/processed/params_elo_mercado.json
+!data/processed/params_xgboost.json
+!data/processed/modelo_logistico.joblib
+!data/processed/historico_previsoes.csv
+!data/processed/backtest_resumo.csv
+!data/processed/coeficientes_logistica.csv
+!data/processed/simulacao_2026.csv
+!data/processed/simulacao_2026_bayes_mercado_blocos4.csv
+!data/processed/forcas_bayes_mercado_blocos4_2026.csv
+
+# Página no formato do Claude (o site usa docs/index.html)
+apresentacao.html
