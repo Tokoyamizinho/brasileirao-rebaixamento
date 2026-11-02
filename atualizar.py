@@ -22,7 +22,9 @@ O QUE ELE FAZ, NA ORDEM
    a atualização continua só com o modelo principal, com um aviso.
 6. Confere as saídas (as probabilidades de queda somam 4, 20 times...).
 7. Guarda uma linha por time em data/processed/historico_previsoes.csv.
-8. Gera a página apresentacao.html a partir do modelo em pagina/.
+8. Gera a página a partir do modelo em pagina/: apresentacao.html (para o Claude)
+   e docs/index.html (documento completo, para o GitHub Pages).
+9. Com --publicar, faz commit e push para o GitHub.
 
 COMO RODAR
 ----------
@@ -32,7 +34,9 @@ COMO RODAR
     python atualizar.py --sem-bayes      # pula o bayesiano (economiza ~3 min)
     python atualizar.py --retreinar      # treina de novo a logística (03)
     python atualizar.py --so-pagina      # só gera a página com os arquivos atuais
+    python atualizar.py --publicar       # no fim, commit + push para o GitHub (GitHub Pages)
     python atualizar.py --agendar 09:00  # cria a tarefa diária no Agendador do Windows
+    python atualizar.py --agendar 09:00 --publicar   # tarefa diária que também publica
     python atualizar.py --desagendar     # remove a tarefa
 
 Cada execução grava um registro completo em logs/atualizacao_AAAA-MM-DD_HHMM.log.
@@ -74,7 +78,9 @@ PROCESSADOS = PASTA / "data" / "processed"
 MANUAL = PASTA / "data" / "manual"
 LOGS = PASTA / "logs"
 MODELO_PAGINA = PASTA / "pagina" / "modelo_apresentacao.html"
-PAGINA = PASTA / "apresentacao.html"
+PAGINA = PASTA / "apresentacao.html"          # fragmento, para a página publicada no Claude
+PAGINA_SITE = PASTA / "docs" / "index.html"     # documento completo, para o GitHub Pages
+BASE_GITHUB = PASTA / "data" / "raw" / "brasileirao_github_2003_2024.csv"
 
 TEMPORADA = 2026
 N_TIMES = 20
@@ -334,8 +340,18 @@ def gerar_pagina(resumo: dict, principal: pd.DataFrame, bayes: pd.DataFrame | No
     modelo = MODELO_PAGINA.read_text(encoding="utf-8")
     if modelo.count("__DADOS__") != 1:
         raise Falha(f"{MODELO_PAGINA.name} precisa ter exatamente um __DADOS__")
-    PAGINA.write_text(modelo.replace("__DADOS__", texto), encoding="utf-8")
-    log(f"  página gerada: {PAGINA.name} ({PAGINA.stat().st_size / 1024:.0f} KB)")
+    pagina = modelo.replace("__DADOS__", texto)
+    PAGINA.write_text(pagina, encoding="utf-8")
+    # O GitHub Pages precisa de um documento HTML completo (sem o doctype, o
+    # navegador entra em "modo de compatibilidade" e o layout muda).
+    corte = pagina.index("</style>") + len("</style>")
+    site = ('<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+            '<style>body { margin: 0; } [hidden] { display: none !important; }</style>\n'
+            + pagina[:corte] + "\n</head>\n<body>\n" + pagina[corte:] + "\n</body>\n</html>\n")
+    PAGINA_SITE.parent.mkdir(exist_ok=True)
+    PAGINA_SITE.write_text(site, encoding="utf-8")
+    log(f"  página gerada: {PAGINA.name} e docs/index.html ({PAGINA.stat().st_size / 1024:.0f} KB)")
 
 
 def ler_bayes() -> pd.DataFrame | None:
@@ -357,7 +373,31 @@ def imprimir_resumo(principal: pd.DataFrame, bayes: pd.DataFrame | None, histori
     log(quadro.head(10).to_string())
 
 
-def agendar(hora: str | None) -> int:
+def publicar(rodada: int) -> None:
+    """Commit + push dos arquivos que mudaram (o .gitignore decide quais).
+    Com o GitHub Pages ligado na pasta docs/, a página pública se atualiza sozinha."""
+    def git(*a):
+        return subprocess.run(["git", *a], cwd=PASTA, capture_output=True, text=True,
+                              encoding="utf-8", errors="replace")
+    log("\n=== Publicando no GitHub ===")
+    if git("rev-parse", "--is-inside-work-tree").returncode != 0:
+        log("  AVISO: esta pasta ainda não é um repositório git; nada foi publicado.")
+        return
+    git("add", "-A")
+    if git("diff", "--cached", "--quiet").returncode == 0:
+        log("  nada mudou desde o último commit")
+        return
+    r = git("commit", "-m", f"Atualização após a {rodada}ª rodada")
+    log("  " + (r.stdout + r.stderr).strip().splitlines()[0])
+    r = git("push")
+    if r.returncode != 0:
+        log("  AVISO: o push falhou (internet ou login do GitHub). O commit ficou salvo no PC;\n"
+            "  ele sobe no próximo push. Detalhe: " + (r.stderr.strip().splitlines() or [""])[-1])
+    else:
+        log("  enviado; o GitHub Pages atualiza a página em 1 ou 2 minutos")
+
+
+def agendar(hora: str | None, com_publicar: bool = False) -> int:
     """Cria (hora = "HH:MM") ou remove (hora = None) a tarefa diária no Windows."""
     if os.name != "nt":
         print("O agendamento automático só foi feito para o Windows (Agendador de Tarefas).")
@@ -365,7 +405,7 @@ def agendar(hora: str | None) -> int:
     if hora is None:
         cmd = ["schtasks", "/Delete", "/F", "/TN", NOME_TAREFA]
     else:
-        acao = f'"{sys.executable}" "{PASTA / "atualizar.py"}"'
+        acao = f'"{sys.executable}" "{PASTA / "atualizar.py"}"' + (" --publicar" if com_publicar else "")
         cmd = ["schtasks", "/Create", "/F", "/TN", NOME_TAREFA, "/SC", "DAILY", "/ST", hora, "/TR", acao]
     resultado = subprocess.run(cmd, capture_output=True, text=True)
     print((resultado.stdout + resultado.stderr).strip())
@@ -388,11 +428,14 @@ def main() -> int:
     parser.add_argument("--retreinar", action="store_true", help="treina de novo a logística (03)")
     parser.add_argument("--so-pagina", action="store_true", help="só gera a página com os arquivos atuais")
     parser.add_argument("--n", type=int, default=20000, help="simulações por modelo (padrão 20.000)")
-    parser.add_argument("--agendar", metavar="HH:MM", help="cria a tarefa diária no Agendador do Windows")
+    parser.add_argument("--publicar", action="store_true",
+                        help="no fim, faz commit e push para o GitHub (atualiza o GitHub Pages)")
+    parser.add_argument("--agendar", metavar="HH:MM", help="cria a tarefa diária no Agendador do Windows "
+                        "(junto com --publicar, a tarefa também publica)")
     parser.add_argument("--desagendar", action="store_true", help="remove a tarefa do Agendador")
     args = parser.parse_args()
     if args.agendar or args.desagendar:
-        return agendar(None if args.desagendar else args.agendar)
+        return agendar(None if args.desagendar else args.agendar, args.publicar)
 
     inicio = datetime.now()
     log = Registro(LOGS / f"atualizacao_{inicio:%Y-%m-%d_%H%M}.log")
@@ -400,7 +443,9 @@ def main() -> int:
     try:
         if not args.so_pagina:
             if not args.sem_download:
-                saida = rodar("01_coleta_dados.py", "--forcar-download")
+                # A base do GitHub (2003–2024) só precisa ser baixada uma vez
+                extra = [] if BASE_GITHUB.exists() else ["--conferir"]
+                saida = rodar("01_coleta_dados.py", "--forcar-download", *extra)
                 if "times não reconhecidos" in saida:
                     raise Falha("o football-data trouxe um nome de time desconhecido "
                                 "(veja o AVISO acima e acrescente em APELIDOS no 01)")
@@ -445,6 +490,8 @@ def main() -> int:
         ULTIMA.write_text(json.dumps({k: v for k, v in resumo.items() if k != "tabela"}
                                      | {"atualizado_em": inicio.isoformat(timespec="minutes")},
                                      indent=2), encoding="utf-8")
+        if args.publicar:
+            publicar(resumo["rodada"])
         log(f"\nPronto em {(datetime.now() - inicio).seconds // 60} min. Registro: {log.caminho}")
         return 0
     except KeyboardInterrupt:

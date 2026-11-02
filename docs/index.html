@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body { margin: 0; } [hidden] { display: none !important; }</style>
+<title>Quem cai no Brasileirão 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma coluna de leitura (~68ch) com gráficos que se alargam até 980px,
+   no vocabulário de uma tabela de classificação: posição, pontos, faixa do Z4. */
+:root {
+  --bg: #f2f4f1;
+  --surface: #ffffff;
+  --ink: #15201a;
+  --muted: #5b6a61;
+  --line: #d5ddd7;
+  --z4: #c23a2f;          /* zona de rebaixamento */
+  --z4-soft: #f3d9d5;
+  --model2: #1d6b49;      /* segundo modelo / seguro */
+  --model2-soft: #d6e8dd;
+  --m1: #c23a2f;          /* série: modelo principal (logística) */
+  --m2: #2f6db5;          /* série: modelo bayesiano */
+  --m2-soft: #dbe6f4;
+  --track: #e4e9e5;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --wide: 980px;
+  --read: 68ch;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1612; --surface: #16201a; --ink: #e5ece7; --muted: #9aaba0; --line: #2c3a31;
+    --z4: #e0574a; --z4-soft: #3d1f1b; --model2: #5cc394; --model2-soft: #183427; --track: #223028;
+    --m1: #e0574a; --m2: #4f8fd6; --m2-soft: #1b2a3d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1612; --surface: #16201a; --ink: #e5ece7; --muted: #9aaba0; --line: #2c3a31;
+  --z4: #e0574a; --z4-soft: #3d1f1b; --model2: #5cc394; --model2-soft: #183427; --track: #223028;
+    --m1: #e0574a; --m2: #4f8fd6; --m2-soft: #1b2a3d;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.page { max-width: var(--wide); margin-inline: auto; display: grid; gap: 72px; }
+.prose { max-width: var(--read); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.02; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2.8rem, 8vw, 5.2rem); text-transform: uppercase; }
+h2 { font-size: clamp(1.9rem, 4.5vw, 2.6rem); text-transform: uppercase; }
+h3 { font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.02em; }
+p { margin: 0; }
+.stack { display: grid; gap: 18px; }
+.eyebrow {
+  font-family: var(--font-data); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+a { color: var(--model2); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--z4); outline-offset: 2px; }
+.small { font-size: 0.88rem; color: var(--muted); }
+
+/* ---------- Abertura ---------- */
+header.hero { padding-top: 56px; display: grid; gap: 20px; }
+.hero .lede { font-size: 1.2rem; max-width: 60ch; }
+.hero .lede strong { font-weight: 600; }
+
+/* ---------- Tabela de risco: os dois modelos lado a lado ---------- */
+.risk { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px 20px 14px; display: grid; gap: 6px; }
+.risk-head, .risk-row {
+  display: grid; grid-template-columns: 2.2rem minmax(7rem, 9.5rem) 2.6rem 2.2rem minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center; column-gap: 14px;
+}
+.mcs { display: contents; }
+.mc { display: grid; grid-template-columns: minmax(0, 1fr) 3.9rem; gap: 8px; align-items: center; min-width: 0; }
+.risk-head { font-family: var(--font-data); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.risk-head .mc { display: flex; gap: 7px; align-items: center; }
+.risk-row { padding: 7px 0; border-bottom: 1px solid var(--line); }
+.risk-row:last-child { border-bottom: 0; }
+.risk-row.z4 .pos { background: var(--z4); color: var(--surface); }
+.pos { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; width: 2.1rem; height: 1.7rem; display: grid; place-items: center; border-radius: 3px; background: var(--track); }
+.team { font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; letter-spacing: 0.01em; min-width: 0; }
+.cell-num { font-family: var(--font-data); font-variant-numeric: tabular-nums; font-size: 0.92rem; text-align: right; }
+.bar { position: relative; height: 16px; background: var(--track); border-radius: 0 4px 4px 0; overflow: hidden; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0; }
+.bar .fill.m1 { background: var(--m1); }
+.bar .fill.m2 { background: var(--m2); }
+.pct { font-family: var(--font-data); font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.95rem; text-align: right; }
+.pct.na { color: var(--muted); font-weight: 400; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 0.85rem; color: var(--muted); padding-top: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; flex: none; }
+.sw.m1 { background: var(--m1); }
+.sw.m2 { background: var(--m2); }
+.sw.z4pos { background: var(--z4); width: 10px; height: 10px; }
+
+@media (max-width: 640px) {
+  .risk { padding: 14px 12px 8px; }
+  .risk-head, .risk-row { grid-template-columns: 1.9rem minmax(0, 1fr) 2.4rem; column-gap: 8px; row-gap: 6px; }
+  .risk-head .h-jr, .risk-row .jr { display: none; }
+  .mcs { display: grid; grid-column: 2 / -1; grid-row: 2; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .mc { grid-template-columns: minmax(0, 1fr) 3.5rem; gap: 6px; }
+  .pct { font-size: 0.85rem; }
+  .team { font-size: 1.1rem; }
+}
+
+/* ---------- Evolução rodada a rodada (pequenos múltiplos) ---------- */
+.evo { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 820px) { .evo { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.evo-card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 12px 8px; display: grid; gap: 4px; min-width: 0; }
+.evo-card .top { display: grid; gap: 1px; min-width: 0; }
+.evo-card .team { font-size: 1.05rem; }
+.evo-card .now { font-family: var(--font-data); font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--muted); }
+.evo-card svg text { font-size: 10px; }
+svg .e-m1 { stroke: var(--m1); fill: none; stroke-width: 2; stroke-linejoin: round; }
+svg .e-m2 { stroke: var(--m2); fill: none; stroke-width: 2; stroke-dasharray: 4 3; stroke-linejoin: round; }
+svg .p-m1 { fill: var(--m1); stroke: var(--surface); stroke-width: 2; }
+svg .p-m2 { fill: var(--surface); stroke: var(--m2); stroke-width: 2; }
+svg .hover-line { stroke: var(--ink); stroke-width: 1; opacity: 0; }
+svg .hit { fill: transparent; cursor: crosshair; }
+.chart-legend .ln.m2d { border-top: 2px dashed var(--m2); }
+.chart-legend .ln.m1s { border-top: 2px solid var(--m1); }
+.tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: var(--bg); font-family: var(--font-data); font-size: 0.78rem; line-height: 1.45; padding: 7px 10px; border-radius: 4px; max-width: 15rem; }
+.tip b { font-weight: 500; }
+details.numeros { font-size: 0.9rem; }
+details.numeros summary { cursor: pointer; color: var(--muted); font-family: var(--font-data); font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
+details.numeros .table-wrap { margin-top: 10px; }
+details.numeros table { min-width: 0; font-size: 0.85rem; }
+details.numeros th, details.numeros td { padding: 6px 10px; }
+details.numeros td.n { text-align: right; }
+
+/* ---------- Fatos ---------- */
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+.fact { padding: 18px 20px 20px 0; display: grid; gap: 4px; align-content: start; }
+.fact + .fact { padding-left: 20px; border-left: 1px solid var(--line); }
+.fact .big { font-family: var(--font-display); font-weight: 700; font-size: 2.6rem; line-height: 1; }
+.fact p { font-size: 0.95rem; }
+@media (max-width: 720px) {
+  .facts { grid-template-columns: 1fr; }
+  .fact, .fact + .fact { padding: 16px 0; border-left: 0; }
+  .fact + .fact { border-top: 1px solid var(--line); }
+}
+
+/* ---------- Faixas de pontos ---------- */
+.ranges { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 4px; }
+.range-row { display: grid; grid-template-columns: minmax(6.5rem, 9rem) minmax(0, 1fr); gap: 12px; align-items: center; height: 30px; }
+.range-row .team { font-size: 1.05rem; }
+.range-track { position: relative; height: 100%; }
+.cut-band { position: absolute; top: 0; bottom: 0; background: var(--z4-soft); }
+.cut-median { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--z4); opacity: 0.7; }
+.span-line { position: absolute; top: 50%; height: 4px; margin-top: -2px; background: var(--ink); opacity: 0.35; border-radius: 2px; }
+.span-dot { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink); border: 2px solid var(--surface); }
+.axis { display: grid; grid-template-columns: minmax(6.5rem, 9rem) minmax(0, 1fr); gap: 12px; }
+.axis-track { position: relative; height: 22px; border-top: 1px solid var(--line); }
+.axis-track span { position: absolute; top: 4px; transform: translateX(-50%); font-family: var(--font-data); font-size: 0.72rem; color: var(--muted); }
+.ranges-overlay { position: absolute; inset: 0; pointer-events: none; }
+
+/* ---------- Passos ---------- */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; counter-reset: passo; }
+.step { padding: 20px 18px 4px 0; border-top: 2px solid var(--ink); display: grid; gap: 8px; align-content: start; }
+.step + .step { padding-left: 18px; }
+.step .n { font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--z4); letter-spacing: 0.06em; }
+.step p { font-size: 0.95rem; }
+@media (max-width: 820px) {
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 20px; }
+  .step:nth-child(odd) { padding-left: 0; }
+}
+@media (max-width: 480px) {
+  .steps { grid-template-columns: 1fr; }
+  .step, .step + .step { padding-left: 0; }
+}
+
+/* ---------- Gráficos SVG ---------- */
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 820px) { .charts { grid-template-columns: 1fr; } }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px 18px 14px; display: grid; gap: 10px; min-width: 0; }
+figcaption { display: grid; gap: 4px; }
+figcaption .t { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.02em; }
+figcaption .s { font-size: 0.88rem; color: var(--muted); }
+svg { width: 100%; height: auto; display: block; overflow: visible; }
+svg text { font-family: var(--font-data); font-size: 11px; fill: var(--muted); }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.8rem; color: var(--muted); }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chart-legend .ln { display: inline-block; width: 18px; height: 0; border-top: 2.5px solid var(--z4); }
+.chart-legend .ln.old { border-top: 1.5px solid var(--muted); }
+.chart-legend .ln.hist { border-top: 1.5px dashed var(--ink); opacity: 0.75; }
+.chart-legend .ln.z4l { border-top: 2px dotted var(--muted); opacity: 0.6; }
+.chart-legend .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--m2); background: var(--surface); }
+svg .grid { stroke: var(--line); stroke-width: 1; }
+svg .s-model { stroke: var(--z4); fill: none; stroke-width: 2.5; }
+svg .s-hist { stroke: var(--ink); fill: none; stroke-width: 1.5; stroke-dasharray: 5 4; opacity: 0.75; }
+svg .s-z4 { stroke: var(--muted); fill: none; stroke-width: 1.5; opacity: 0.35; stroke-dasharray: 1 4; stroke-linecap: round; }
+svg .d-model { fill: var(--z4); }
+svg .d-bayes { fill: var(--surface); stroke: var(--m2); stroke-width: 2; }
+svg .diag { stroke: var(--ink); stroke-dasharray: 3 4; opacity: 0.45; }
+svg .s-old { stroke: var(--muted); fill: none; stroke-width: 1.5; opacity: 0.7; }
+svg .d-old { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; }
+svg .lbl-model { fill: var(--z4); font-weight: 500; }
+svg .lbl-bayes { fill: var(--m2); font-weight: 500; }
+svg .lbl-ink { fill: var(--ink); }
+
+/* ---------- Tabelas ---------- */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 0.95rem; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-data); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td.n { font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .name { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; display: block; }
+tr.ref td { color: var(--muted); }
+
+/* ---------- Hipóteses ---------- */
+.ledger { display: grid; gap: 0; border-top: 2px solid var(--ink); }
+.hyp { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr) 9.5rem; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.hyp .q { font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; line-height: 1.15; }
+.hyp .e { font-size: 0.95rem; }
+.chip { justify-self: start; font-family: var(--font-data); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 9px; border-radius: 3px; border: 1px solid currentColor; white-space: nowrap; }
+.chip.yes { color: var(--model2); background: var(--model2-soft); border-color: transparent; }
+.chip.no { color: var(--muted); }
+.chip.small-fx { color: var(--z4); background: var(--z4-soft); border-color: transparent; }
+@media (max-width: 720px) {
+  .hyp { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* ---------- Rodapé ---------- */
+footer { border-top: 2px solid var(--ink); padding-top: 20px; display: grid; gap: 14px; font-size: 0.92rem; }
+footer ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 6px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .bar .fill { transition: width 600ms ease-out; }
+}
+@media (forced-colors: active) {
+  .bar .fill, .sw { forced-color-adjust: none; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="page">
+
+  <header class="hero">
+    <p class="eyebrow" id="eyebrow">Brasileirão Série A 2026</p>
+    <h1>Quem cai no Brasileirão 2026?</h1>
+    <p class="lede" id="lede"></p>
+  </header>
+
+  <section class="stack" aria-labelledby="chances">
+    <h2 id="chances" class="prose">Chance de rebaixamento</h2>
+    <div class="risk" id="risk" role="table" aria-label="Probabilidade de rebaixamento por time">
+      <div class="risk-head" role="row">
+        <span role="columnheader">Pos</span>
+        <span role="columnheader">Time</span>
+        <span role="columnheader" class="cell-num">Pts</span>
+        <span role="columnheader" class="cell-num h-jr">J</span>
+        <span class="mcs">
+          <span role="columnheader" class="mc"><i class="sw m1"></i>Modelo principal</span>
+          <span role="columnheader" class="mc"><i class="sw m2"></i>Bayesiano</span>
+        </span>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="sw m1"></i>Principal: Elo do mercado + regressão logística</span>
+      <span><i class="sw m2"></i>Bayesiano: gols + odds dos jogos passados (PyMC)</span>
+      <span><i class="sw z4pos"></i>Posição atual no Z4</span>
+      <span>J = jogos restantes</span>
+    </div>
+    <p class="prose small" id="concordancia"></p>
+  </section>
+
+  <section class="facts" aria-label="Números principais">
+    <div class="fact">
+      <span class="eyebrow">Linha de corte</span>
+      <span class="big num" id="f-corte"></span>
+      <p id="f-corte-txt"></p>
+    </div>
+    <div class="fact">
+      <span class="eyebrow">Z4 mais provável</span>
+      <span class="big num" id="f-z4"></span>
+      <p id="f-z4-txt"></p>
+    </div>
+    <div class="fact">
+      <span class="eyebrow">Backtest 2015–2025</span>
+      <span class="big num">−19%</span>
+      <p>Erro de Brier do modelo comparado ao raciocínio de torcedor ("quantas vezes quem estava nesta posição caiu"): 0,075 contra 0,092.</p>
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="evolucao">
+    <div class="stack prose">
+      <h2 id="evolucao">Como as chances mudaram</h2>
+      <p>Chance de rebaixamento depois de cada rodada, nos dois modelos. O eixo vai até a 38ª rodada; o espaço vazio à direita é o que ainda falta jogar.</p>
+    </div>
+    <div class="evo" id="evo"></div>
+    <div class="chart-legend">
+      <span><i class="ln m1s"></i>Modelo principal</span>
+      <span><i class="ln m2d"></i>Bayesiano</span>
+      <span>Escala de 0% a 100%, igual em todos os quadros</span>
+    </div>
+    <details class="numeros">
+      <summary>Ver os números</summary>
+      <div class="table-wrap" id="evo-tabela"></div>
+    </details>
+  </section>
+
+  <section class="stack" aria-labelledby="faixas">
+    <div class="stack prose">
+      <h2 id="faixas">Onde cada time deve terminar</h2>
+      <p>Cada linha mostra a faixa de pontos finais em 80% das simulações do modelo principal, com o ponto na média. A faixa vermelha é onde costuma ficar o 17º colocado: quem termina dentro dela depende de desempate e dos resultados dos rivais.</p>
+    </div>
+    <div class="ranges" id="ranges"></div>
+  </section>
+
+  <section class="stack" aria-labelledby="como">
+    <div class="stack prose">
+      <h2 id="como">Como a previsão é feita</h2>
+      <p>O modelo não tenta adivinhar quem cai diretamente: desde 2012 só houve 56 rebaixamentos, poucos para aprender. Ele prevê cada jogo e depois simula o campeonato.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="n">1 · Dados</span>
+        <h3 id="s-jogos">jogos</h3>
+        <p>Resultados e odds da Série A de 2012 a 2026, conferidos placar a placar contra uma segunda fonte (100% de concordância).</p>
+      </div>
+      <div class="step">
+        <span class="n">2 · Força</span>
+        <h3>Elo do mercado</h3>
+        <p>Uma nota por time, corrigida depois de cada jogo pelo que as odds esperavam. Assim ela absorve o que as casas de apostas sabem e vale também para os jogos futuros.</p>
+      </div>
+      <div class="step">
+        <span class="n">3 · Jogo</span>
+        <h3>Vitória, empate, derrota</h3>
+        <p>Uma regressão logística transforma a diferença de Elo nas três probabilidades de cada partida.</p>
+      </div>
+      <div class="step">
+        <span class="n">4 · Campeonato</span>
+        <h3 id="s-sims">simulações</h3>
+        <p>Os jogos restantes são sorteados na ordem do calendário, e a nota de cada time se atualiza com os resultados de cada cenário.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="funciona">
+    <div class="stack prose">
+      <h2 id="funciona">O modelo acertaria no passado?</h2>
+      <p>Para cada temporada de 2015 a 2025, o campeonato foi "congelado" em seis momentos, da 10ª à 34ª rodada. O modelo simulou o restante usando só o que se sabia naquele dia, e as previsões foram comparadas com quem realmente caiu: 66 cenários e 1.320 previsões.</p>
+    </div>
+    <div class="charts">
+      <figure>
+        <figcaption>
+          <span class="t">Erro por rodada</span>
+          <span class="s">Brier das probabilidades de rebaixamento (menor é melhor). Chutar 20% para todos daria 0,160.</span>
+        </figcaption>
+        <svg id="brier" viewBox="0 0 400 290" role="img" aria-label="Erro de Brier por rodada do corte para cinco abordagens"></svg>
+        <div class="chart-legend">
+          <span><i class="ln model"></i>Elo do mercado (atual)</span>
+          <span><i class="ln old"></i>Elo comum (versão anterior)</span>
+          <span><i class="dot bayes"></i>Bayesiano 2.0</span>
+          <span><i class="ln hist"></i>Histórico por posição</span>
+          <span><i class="ln z4l"></i>Z4 atual</span>
+        </div>
+      </figure>
+      <figure>
+        <figcaption>
+          <span class="t">Calibração</span>
+          <span class="s">Quando o modelo diz X%, quantos caíram de fato? A diagonal é a calibração perfeita.</span>
+        </figcaption>
+        <svg id="calib" viewBox="0 0 400 290" role="img" aria-label="Probabilidade prevista contra frequência real de rebaixamento"></svg>
+        <div class="chart-legend">
+          <span><i class="ln model"></i>Elo do mercado (atual)</span>
+          <span><i class="ln old"></i>Elo comum (versão inicial)</span>
+          <span>Tamanho do ponto = nº de previsões</span>
+        </div>
+      </figure>
+    </div>
+    <p class="prose small">A versão inicial, com o Elo comum, era confiante demais: quem recebia de 50% a 75% de chance caía em só 55% dos casos. Ela precisou de uma incerteza ajustada à mão. Com o Elo do mercado, o modelo já sai calibrado, sem nenhum ajuste.</p>
+  </section>
+
+  <section class="stack" aria-labelledby="modelos">
+    <div class="stack prose">
+      <h2 id="modelos">Os modelos, a mesma régua</h2>
+      <p>Todos foram avaliados do mesmo jeito: treinados só com o passado e testados em temporadas que não viram. Uma mudança só entrava se errasse menos de forma clara. A que fez diferença não foi um algoritmo mais sofisticado, e sim uma informação nova.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Modelo</th><th>O que faz</th><th>Resultado</th><th>Veredito</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="name">Logística + Elo do mercado</span></td>
+            <td>Nota de força corrigida pelas odds dos jogos passados, convertida em vitória, empate e derrota.</td>
+            <td class="n">Brier 0,072<br>log loss 1,015</td>
+            <td>Modelo principal</td>
+          </tr>
+          <tr>
+            <td><span class="name">Logística + Elo comum</span></td>
+            <td>O mesmo, com a nota calculada só pelos resultados.</td>
+            <td class="n">Brier 0,079<br>log loss 1,021</td>
+            <td>Versão anterior</td>
+          </tr>
+          <tr>
+            <td><span class="name">Bayesiano hierárquico</span></td>
+            <td>Estima ataque e defesa de cada time, com incerteza, a partir dos gols e das odds dos jogos passados; a força muda em 4 blocos por temporada (PyMC).</td>
+            <td class="n">Brier 0,072<br><span class="small">só gols: 0,080</span></td>
+            <td>Empata com o modelo principal por outro caminho; vira a segunda opinião</td>
+          </tr>
+          <tr>
+            <td><span class="name">XGBoost</span></td>
+            <td>Árvores de decisão com 19 features, hiperparâmetros escolhidos pelo Optuna.</td>
+            <td class="n">log loss 1,022</td>
+            <td>Não superou o Elo comum; o Optuna escolheu árvores de uma só pergunta</td>
+          </tr>
+          <tr class="ref">
+            <td><span class="name">Odds do próprio jogo</span></td>
+            <td>Referência externa: só existe para jogos com odds publicadas.</td>
+            <td class="n">log loss 0,999</td>
+            <td>Ainda à frente</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose small">Brier: cenários de backtest nas rodadas 10, 20, 30 e 34. Log loss: previsão de cada jogo de 2022 a 2026, temporadas que nenhum modelo usou para escolher seus parâmetros.</p>
+  </section>
+
+  <section class="stack" aria-labelledby="hipoteses">
+    <div class="stack prose">
+      <h2 id="hipoteses">O que foi testado</h2>
+      <p>Cada ideia virou uma hipótese com teste definido antes de ver o resultado. A maioria das ideias baseadas em placares não sobreviveu: o Elo já captura quase tudo o que eles contam. O ganho veio de fora deles, das odds.</p>
+    </div>
+    <div class="ledger" id="ledger"></div>
+  </section>
+
+  <section class="stack prose" aria-labelledby="limites">
+    <h2 id="limites">Limites</h2>
+    <p>As odds do próprio jogo ainda erram menos (log loss 0,999 contra 1,015): o Elo do mercado fechou cerca de 40% da distância, mas não toda. O restante deve depender de informação de última hora, como a escalação confirmada.</p>
+    <p>Nos jogos futuros não há odds, então a nota do mercado passa a ser atualizada pelos resultados simulados. Quanto mais longe a rodada, mais o modelo depende dessa aproximação.</p>
+    <p><span id="limite-diff"></span> Antes, o bayesiano só via gols e dava 41% ao Corinthians (contra 22%) e 13% ao Vasco (contra 3%). Quando passou a usar as odds dos jogos passados, chegou ao mesmo lugar. Como os dois bebem da mesma fonte, a concordância não é prova independente: se o mercado estiver errado sobre um time, os dois erram juntos.</p>
+  </section>
+
+  <footer>
+    <p class="eyebrow">Fontes e ferramentas</p>
+    <ul>
+      <li><a href="https://www.football-data.co.uk/" target="_blank" rel="noopener">football-data.co.uk</a>: resultados e odds desde 2012.</li>
+      <li><a href="https://github.com/adaoduque/Brasileirao_Dataset" target="_blank" rel="noopener">Brasileirao_Dataset</a>: resultados de 2003 a 2024, usados para conferência e para a rodagem dos clubes.</li>
+      <li><a href="https://valorfinal.com.br/brasileirao/2026" target="_blank" rel="noopener">ValorFinal</a>: calendário das rodadas restantes, resultados das rodadas mais recentes, antes de entrarem no football-data, e um modelo independente para comparação.</li>
+      <li>Python, pandas, scikit-learn, XGBoost, Optuna, PyMC e nutpie.</li>
+    </ul>
+    <p class="small" id="rodape"></p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const fmt = (v, d = 1) => v.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  // ---------- Dados: preenchidos pelo atualizar.py a cada rodada ----------
+  // times: pos, pts, jr (jogos restantes), p1 / pb = P(queda) em % no modelo
+  // principal / bayesiano, lo-med-hi = pontos finais (p10, média, p90) do principal.
+  const DADOS = {"temporada":2026,"rodada":33,"rodadas_restantes":6,"ultimo_jogo":"2026-10-31","atualizado_em":"2026-11-02","n_simulacoes":20000,"n_jogos_total":5648,"times":[{"time":"Chapecoense","pos":20,"pts":21,"jr":6,"p1":100.0,"pb":100.0,"lo":22.0,"med":25.6,"hi":29.0},{"time":"Remo","pos":19,"pts":29,"jr":5,"p1":99.89,"pb":99.87,"lo":30.0,"med":33.6,"hi":37.0},{"time":"Grêmio","pos":15,"pts":37,"jr":5,"p1":56.45,"pb":56.19,"lo":38.0,"med":41.6,"hi":45.0},{"time":"Internacional","pos":18,"pts":35,"jr":5,"p1":47.52,"pb":48.63,"lo":39.0,"med":42.2,"hi":46.0},{"time":"Mirassol","pos":16,"pts":37,"jr":5,"p1":29.66,"pb":26.83,"lo":40.0,"med":43.7,"hi":47.0},{"time":"Vitória","pos":14,"pts":38,"jr":5,"p1":28.36,"pb":27.93,"lo":40.0,"med":43.4,"hi":47.0},{"time":"Corinthians","pos":17,"pts":36,"jr":5,"p1":22.53,"pb":24.05,"lo":40.0,"med":43.8,"hi":48.0},{"time":"Botafogo","pos":12,"pts":39,"jr":5,"p1":7.18,"pb":7.61,"lo":42.0,"med":45.9,"hi":49.0},{"time":"Coritiba","pos":11,"pts":42,"jr":5,"p1":4.38,"pb":5.29,"lo":43.0,"med":45.5,"hi":49.0},{"time":"Vasco","pos":13,"pts":38,"jr":6,"p1":4.01,"pb":3.58,"lo":43.0,"med":47.4,"hi":51.0},{"time":"São Paulo","pos":10,"pts":43,"jr":5,"p1":0.02,"pb":0.01,"lo":47.0,"med":50.5,"hi":54.0},{"time":"Athletico-PR","pos":5,"pts":54,"jr":5,"p1":0.0,"pb":0.0,"lo":57.0,"med":60.9,"hi":64.0},{"time":"Bahia","pos":6,"pts":53,"jr":5,"p1":0.0,"pb":0.0,"lo":57.0,"med":60.4,"hi":64.0},{"time":"Atlético-MG","pos":7,"pts":50,"jr":5,"p1":0.0,"pb":0.0,"lo":52.0,"med":55.6,"hi":59.0},{"time":"Cruzeiro","pos":3,"pts":57,"jr":5,"p1":0.0,"pb":0.0,"lo":62.0,"med":65.4,"hi":69.0},{"time":"Bragantino","pos":9,"pts":44,"jr":5,"p1":0.0,"pb":0.01,"lo":48.0,"med":51.7,"hi":56.0},{"time":"Fluminense","pos":4,"pts":54,"jr":5,"p1":0.0,"pb":0.0,"lo":57.0,"med":60.9,"hi":65.0},{"time":"Flamengo","pos":1,"pts":73,"jr":5,"p1":0.0,"pb":0.0,"lo":81.0,"med":84.2,"hi":88.0},{"time":"Palmeiras","pos":2,"pts":70,"jr":5,"p1":0.0,"pb":0.0,"lo":77.0,"med":79.8,"hi":83.0},{"time":"Santos","pos":8,"pts":47,"jr":5,"p1":0.0,"pb":0.0,"lo":51.0,"med":54.5,"hi":58.0}],"corte":{"p10":39.0,"mediana":41.0,"p90":43.0},"salva_com":{"38":0.0026,"39":0.0211,"40":0.1039,"41":0.2923,"42":0.5834,"43":0.8487,"44":0.9667,"45":0.9969,"46":0.9999},"quartetos":[[["Chapecoense","Grêmio","Internacional","Remo"],0.2251],[["Chapecoense","Grêmio","Remo","Vitória"],0.1211],[["Chapecoense","Internacional","Mirassol","Remo"],0.0938],[["Chapecoense","Grêmio","Mirassol","Remo"],0.0887],[["Chapecoense","Corinthians","Grêmio","Remo"],0.0689]],"bayes":{"r_hat_max":1.0084,"ess_min":522.7612,"divergencias":0.0},"historico":[{"r":32,"time":"Grêmio","p1":74.4,"pb":null},{"r":32,"time":"Corinthians","p1":33.8,"pb":null},{"r":32,"time":"Internacional","p1":29.4,"pb":null},{"r":32,"time":"Coritiba","p1":21.6,"pb":null},{"r":32,"time":"Mirassol","p1":18.1,"pb":null},{"r":32,"time":"Vitória","p1":16.8,"pb":null},{"r":32,"time":"Botafogo","p1":4.4,"pb":null},{"r":32,"time":"Vasco","p1":1.5,"pb":null},{"r":33,"time":"Chapecoense","p1":100.0,"pb":100.0},{"r":33,"time":"Remo","p1":99.88,"pb":99.86},{"r":33,"time":"Grêmio","p1":56.44,"pb":56.19},{"r":33,"time":"Internacional","p1":47.52,"pb":48.63},{"r":33,"time":"Mirassol","p1":29.66,"pb":26.83},{"r":33,"time":"Vitória","p1":28.36,"pb":27.93},{"r":33,"time":"Corinthians","p1":22.53,"pb":24.05},{"r":33,"time":"Botafogo","p1":7.18,"pb":7.61},{"r":33,"time":"Coritiba","p1":4.38,"pb":5.29},{"r":33,"time":"Vasco","p1":4.02,"pb":3.58},{"r":33,"time":"São Paulo","p1":0.02,"pb":0.01},{"r":33,"time":"Athletico-PR","p1":0.0,"pb":0.0},{"r":33,"time":"Bahia","p1":0.0,"pb":0.0},{"r":33,"time":"Atlético-MG","p1":0.0,"pb":0.0},{"r":33,"time":"Cruzeiro","p1":0.0,"pb":0.0},{"r":33,"time":"Bragantino","p1":0.0,"pb":0.0},{"r":33,"time":"Fluminense","p1":0.0,"pb":0.0},{"r":33,"time":"Flamengo","p1":0.0,"pb":0.0},{"r":33,"time":"Palmeiras","p1":0.0,"pb":0.0},{"r":33,"time":"Santos","p1":0.0,"pb":0.0}]};
+  const temBayes = DADOS.times.some((t) => t.pb !== null);
+  const pctTxt = (v) => {
+    if (v === null || v === undefined) return "—";
+    if (v >= 99.995) return "100%";
+    if (v >= 99.95) return ">99,9%";
+    if (v === 0) return "0%";
+    if (v < 1) return "<1%";
+    return fmt(v) + "%";
+  };
+  const inteiro = (v) => Math.round(v).toLocaleString("pt-BR");
+  const lista = (nomes) => nomes.length <= 1 ? nomes.join("") : nomes.slice(0, -1).join(", ") + " e " + nomes[nomes.length - 1];
+  const porExtenso = ["zero", "uma", "duas", "três", "quatro"];
+  const dataLonga = (iso) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    const txt = new Date(y, m - 1, d).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" });
+    return d === 1 ? txt.replace(/^1 /, "1º ") : txt;
+  };
+  const rodadasRestantes = Math.max(0, 38 - DADOS.rodada);
+
+  // Os 10 mais ameaçados pelo modelo principal (empate: bayesiano)
+  const times = [...DADOS.times].sort((a, b) => b.p1 - a.p1 || (b.pb ?? 0) - (a.pb ?? 0)).slice(0, 10);
+
+  // ---------- Textos que mudam a cada rodada ----------
+  document.getElementById("eyebrow").textContent =
+    `Brasileirão Série A ${DADOS.temporada} · dados até a ${DADOS.rodada}ª rodada · atualizado em ${dataLonga(DADOS.atualizado_em)}`;
+
+  (function lede() {
+    const certos = times.filter((t) => t.p1 >= 99 && (t.pb === null || t.pb >= 99)).map((t) => t.time);
+    const resto = times.filter((t) => !certos.includes(t.time));
+    const vagas = 4 - certos.length;
+    const comPct = (t) => `<strong>${t.time} (${pctTxt(t.p1)})</strong>`;
+    let txt = "";
+    if (rodadasRestantes === 0 && vagas === 0) {
+      txt = `Campeonato encerrado: ${lista(certos)} foram rebaixados.`;
+    } else {
+      if (certos.length) txt += `${lista(certos)} ${certos.length > 1 ? "estão" : "está"} praticamente rebaixado${certos.length > 1 ? "s" : ""}. `;
+      if (vagas > 0) {
+        const n = Math.max(vagas, 2);
+        const frente = resto.slice(0, n);
+        const depois = resto.slice(n).filter((t) => t.p1 >= 15);
+        const quem = vagas === 4 ? "Os mais ameaçados" : `Para ${vagas === 1 ? "a última vaga" : "as outras " + porExtenso[vagas] + " vagas"}, os mais ameaçados`;
+        txt += `${quem} são ${lista(frente.map(comPct))}. `;
+        if (depois.length) {
+          const lo = Math.min(...depois.map((t) => t.p1)), hi = Math.max(...depois.map((t) => t.p1));
+          txt += `${lista(depois.map((t) => t.time))} ainda ${depois.length > 1 ? "têm" : "tem"} de ${Math.round(lo)}% a ${Math.round(hi)}% de chance de cair. `;
+        }
+      }
+      txt += `As chances vêm de ${inteiro(DADOS.n_simulacoes)} simulações ${rodadasRestantes === 1 ? "da última rodada" : "das " + rodadasRestantes + " rodadas restantes"}, feitas por dois modelos diferentes.`;
+    }
+    document.getElementById("lede").innerHTML = txt;
+  })();
+
+  // Concordância entre os modelos
+  (function () {
+    const alvo = document.getElementById("concordancia");
+    const diff = document.getElementById("limite-diff");
+    if (!temBayes) {
+      alvo.textContent = "O modelo bayesiano não rodou nesta atualização; a tabela mostra só o modelo principal.";
+      diff.textContent = "Nesta atualização o modelo bayesiano não estava disponível.";
+      return;
+    }
+    const maior = DADOS.times.filter((t) => t.pb !== null)
+      .map((t) => ({ time: t.time, d: Math.abs(t.p1 - t.pb) })).sort((a, b) => b.d - a.d)[0];
+    const frase = `A maior diferença entre os dois modelos é de ${fmt(maior.d)} pontos percentuais (${maior.time}).`;
+    alvo.textContent = frase + " Quando os dois concordam, a previsão é mais confiável; quando discordam, vale olhar o porquê.";
+    diff.textContent = frase;
+  })();
+
+  // ---------- Tabela de risco ----------
+  const risk = document.getElementById("risk");
+  const celula = (p, cls, nome) =>
+    `<span class="mc" role="cell" aria-label="${nome}: ${pctTxt(p)}">` +
+      `<span class="bar"><span class="fill ${cls}" style="width:${p === null ? 0 : Math.min(p, 100)}%"></span></span>` +
+      `<span class="pct${p === null ? " na" : ""}">${pctTxt(p)}</span></span>`;
+  times.forEach(({ pos, time, pts, jr, p1, pb }) => {
+    const row = document.createElement("div");
+    row.className = "risk-row" + (pos >= 17 ? " z4" : "");
+    row.setAttribute("role", "row");
+    row.innerHTML =
+      `<span class="pos" role="cell">${pos}</span>` +
+      `<span class="team" role="cell">${time}</span>` +
+      `<span class="cell-num" role="cell">${pts}</span>` +
+      `<span class="cell-num jr" role="cell">${jr}</span>` +
+      `<span class="mcs">${celula(p1, "m1", "modelo principal")}${celula(pb, "m2", "bayesiano")}</span>`;
+    risk.appendChild(row);
+  });
+
+  // ---------- Fatos ----------
+  (function () {
+    const c = DADOS.corte;
+    document.getElementById("f-corte").textContent = `${Math.round(c.mediana)} pts`;
+    const salva = Object.entries(DADOS.salva_com).map(([p, v]) => [Number(p), v]).sort((a, b) => a[0] - b[0]);
+    const seguro = salva.find(([, v]) => v >= 0.8);
+    document.getElementById("f-corte-txt").textContent =
+      `É a mediana de pontos do 17º colocado, o primeiro a cair.` +
+      (seguro ? ` Com ${seguro[0]} pontos, um time se salva em ${Math.round(seguro[1] * 100)}% dos cenários.` : "");
+    const [q1, q2] = DADOS.quartetos;
+    document.getElementById("f-z4").textContent = `${Math.round(q1[1] * 100)}%`;
+    let txt = `${lista(q1[0])}.`;
+    if (q2) {
+      const sai = q1[0].filter((t) => !q2[0].includes(t)), entra = q2[0].filter((t) => !q1[0].includes(t));
+      txt += sai.length === 1
+        ? ` O segundo mais provável (${Math.round(q2[1] * 100)}%) troca ${sai[0]} por ${entra[0]}.`
+        : ` O segundo mais provável (${Math.round(q2[1] * 100)}%) é ${lista(q2[0])}.`;
+    }
+    document.getElementById("f-z4-txt").textContent = txt;
+    document.getElementById("s-jogos").textContent = `${inteiro(DADOS.n_jogos_total)} jogos`;
+    document.getElementById("s-sims").textContent = `${inteiro(DADOS.n_simulacoes)} simulações`;
+    document.getElementById("rodape").textContent =
+      `Projeto de portfólio. Dados até a ${DADOS.rodada}ª rodada (último jogo em ${dataLonga(DADOS.ultimo_jogo)}); as probabilidades mudam a cada rodada.`;
+  })();
+
+  // ---------- Faixas de pontos ----------
+  const corte = DADOS.corte;
+  const ranges = document.getElementById("ranges");
+  const todosPts = times.flatMap((t) => [t.lo, t.hi]).concat([corte.p10, corte.p90]);
+  const xMin = Math.floor((Math.min(...todosPts) - 2) / 5) * 5, xMax = Math.ceil((Math.max(...todosPts) + 2) / 5) * 5;
+  const x = (v) => ((v - xMin) / (xMax - xMin)) * 100;
+  [...times].sort((a, b) => a.med - b.med).forEach(({ time, lo, med, hi }) => {
+    const row = document.createElement("div");
+    row.className = "range-row";
+    row.innerHTML =
+      `<span class="team">${time}</span>` +
+      `<span class="range-track" aria-label="${time}: entre ${lo} e ${hi} pontos, média ${fmt(med)}">` +
+        `<span class="cut-band" style="left:${x(corte.p10)}%;width:${x(corte.p90) - x(corte.p10)}%"></span>` +
+        `<span class="cut-median" style="left:${x(corte.mediana)}%"></span>` +
+        `<span class="span-line" style="left:${x(lo)}%;width:${x(hi) - x(lo)}%"></span>` +
+        `<span class="span-dot" style="left:${x(med)}%"></span>` +
+      `</span>`;
+    ranges.appendChild(row);
+  });
+  const axis = document.createElement("div");
+  axis.className = "axis";
+  let ticks = "";
+  for (let v = xMin; v <= xMax; v += 5) ticks += `<span style="left:${x(v)}%">${v}</span>`;
+  axis.innerHTML = `<span class="small">pontos finais</span><span class="axis-track">${ticks}</span>`;
+  ranges.appendChild(axis);
+
+  // ---------- SVG helpers ----------
+  const NS = "http://www.w3.org/2000/svg";
+  function el(svg, tag, attrs, text) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    svg.appendChild(e);
+    return e;
+  }
+  const pathOf = (pts) => pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+
+  // ---------- Brier por corte ----------
+  (function () {
+    const svg = document.getElementById("brier");
+    const L = 44, R = 384, T = 12, B = 250;
+    const cortes = [10, 15, 20, 25, 30, 34];
+    const sx = (c) => L + ((c - 10) / 24) * (R - L);
+    const sy = (v) => B - (v / 0.22) * (B - T);
+    [0, 0.05, 0.1, 0.15, 0.2].forEach((v) => {
+      el(svg, "line", { x1: L, x2: R, y1: sy(v), y2: sy(v), class: "grid" });
+      el(svg, "text", { x: L - 8, y: sy(v) + 4, "text-anchor": "end" }, fmt(v, 2));
+    });
+    cortes.forEach((c) => el(svg, "text", { x: sx(c), y: B + 18, "text-anchor": "middle" }, c));
+    el(svg, "text", { x: (L + R) / 2, y: B + 36, "text-anchor": "middle" }, "rodada em que o campeonato foi congelado");
+    const series = [
+      { cls: "s-z4", v: [0.1909, 0.2091, 0.1273, 0.0909, 0.1, 0.0545] },
+      { cls: "s-hist", v: [0.1456, 0.1311, 0.0924, 0.0692, 0.0656, 0.0479] },
+      { cls: "s-old", v: [0.1222, 0.1066, 0.0877, 0.0679, 0.0577, 0.0482] },
+      { cls: "s-model", v: [0.1039, 0.0975, 0.0799, 0.0632, 0.0552, 0.0477] },
+    ];
+    series.forEach((s) => el(svg, "path", { d: pathOf(cortes.map((c, i) => [sx(c), sy(s.v[i])])), class: s.cls }));
+    cortes.forEach((c, i) => el(svg, "circle", { cx: sx(c), cy: sy(series[3].v[i]), r: 3.5, class: "d-model" }));
+    const bayes = [[10, 0.1063], [20, 0.0796], [30, 0.0553], [34, 0.0479]];
+    bayes.forEach(([c, v]) => el(svg, "circle", { cx: sx(c), cy: sy(v), r: 4, class: "d-bayes" }));
+  })();
+
+  // ---------- Calibração ----------
+  (function () {
+    const svg = document.getElementById("calib");
+    const L = 44, R = 384, T = 12, B = 250;
+    const sx = (v) => L + v * (R - L);
+    const sy = (v) => B - v * (B - T);
+    [0, 0.25, 0.5, 0.75, 1].forEach((v) => {
+      el(svg, "line", { x1: L, x2: R, y1: sy(v), y2: sy(v), class: "grid" });
+      el(svg, "text", { x: L - 8, y: sy(v) + 4, "text-anchor": "end" }, Math.round(v * 100) + "%");
+      el(svg, "text", { x: sx(v), y: B + 18, "text-anchor": "middle" }, Math.round(v * 100) + "%");
+    });
+    el(svg, "text", { x: (L + R) / 2, y: B + 36, "text-anchor": "middle" }, "probabilidade prevista");
+    el(svg, "line", { x1: sx(0), y1: sy(0), x2: sx(1), y2: sy(1), class: "diag" });
+    // [prevista, real, n]
+    const sem = [[0.002, 0.007, 596], [0.052, 0.071, 198], [0.173, 0.193, 150], [0.367, 0.354, 161], [0.617, 0.546, 97], [0.815, 0.766, 47], [0.944, 1, 27], [0.995, 1, 44]];
+    const com = [[0.002, 0.007, 608], [0.053, 0.078, 193], [0.166, 0.16, 144], [0.37, 0.331, 163], [0.619, 0.584, 89], [0.823, 0.837, 43], [0.94, 1, 35], [0.996, 1, 45]];
+    el(svg, "path", { d: pathOf(sem.map((p) => [sx(p[0]), sy(p[1])])), class: "s-old" });
+    sem.forEach((p) => el(svg, "circle", { cx: sx(p[0]), cy: sy(p[1]), r: 3.5, class: "d-old" }));
+    el(svg, "path", { d: pathOf(com.map((p) => [sx(p[0]), sy(p[1])])), class: "s-model" });
+    com.forEach((p) => el(svg, "circle", { cx: sx(p[0]), cy: sy(p[1]), r: 3.5 + Math.sqrt(p[2]) / 6, class: "d-model" }));
+  })();
+
+  // ---------- Evolução rodada a rodada (pequenos múltiplos, mesma escala) ----------
+  (function () {
+    const box = document.getElementById("evo");
+    const hist = DADOS.historico;
+    const rodadas = [...new Set(hist.map((h) => h.r))].sort((a, b) => a - b);
+    const r0 = Math.min(rodadas[0], DADOS.rodada - 1);
+    const W = 200, H = 104, L = 26, R = 192, T = 8, B = 86;
+    const sx = (r) => L + ((r - r0) / (38 - r0)) * (R - L);
+    const sy = (p) => B - (p / 100) * (B - T);
+    const tip = document.createElement("div");
+    tip.className = "tip";
+    tip.hidden = true;
+    document.body.appendChild(tip);
+
+    times.forEach((t) => {
+      const serie = hist.filter((h) => h.time === t.time).sort((a, b) => a.r - b.r);
+      const card = document.createElement("div");
+      card.className = "evo-card";
+      card.innerHTML = `<div class="top"><span class="team">${t.time}</span>` +
+        `<span class="now">${pctTxt(t.p1)} · ${pctTxt(t.pb)}</span></div>`;
+      const svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", `${t.time}: chance de rebaixamento por rodada. ` +
+        serie.map((h) => `Rodada ${h.r}: ${pctTxt(h.p1)} no principal, ${pctTxt(h.pb)} no bayesiano`).join("; "));
+      card.appendChild(svg);
+      box.appendChild(card);
+
+      [0, 50, 100].forEach((v) => {
+        el(svg, "line", { x1: L, x2: R, y1: sy(v), y2: sy(v), class: "grid" });
+        el(svg, "text", { x: L - 5, y: sy(v) + 3.5, "text-anchor": "end" }, v + "%");
+      });
+      el(svg, "text", { x: sx(r0), y: B + 14, "text-anchor": "start" }, r0);
+      el(svg, "text", { x: R, y: B + 14, "text-anchor": "end" }, 38);
+      const guia = el(svg, "line", { x1: 0, x2: 0, y1: T, y2: B, class: "hover-line" });
+
+      [["p1", "e-m1", "p-m1"], ["pb", "e-m2", "p-m2"]].forEach(([k, linha, ponto]) => {
+        const pts = serie.filter((h) => h[k] !== null).map((h) => [sx(h.r), sy(h[k])]);
+        if (pts.length > 1) el(svg, "path", { d: pathOf(pts), class: linha });
+        pts.forEach(([cx, cy], i) => el(svg, "circle", { cx, cy, r: i === pts.length - 1 ? 4.5 : 3.5, class: ponto }));
+      });
+
+      // Alvos de hover: uma faixa por rodada, maior que os pontos
+      const passo = (R - L) / (38 - r0);
+      serie.forEach((h) => {
+        const alvo = el(svg, "rect", { x: sx(h.r) - Math.max(passo, 14) / 2, y: 0, width: Math.max(passo, 14), height: H, class: "hit" });
+        const mostrar = (ev) => {
+          guia.setAttribute("x1", sx(h.r)); guia.setAttribute("x2", sx(h.r)); guia.style.opacity = 0.35;
+          tip.innerHTML = `<b>${t.time} · rodada ${h.r}</b><br>Principal ${pctTxt(h.p1)}<br>Bayesiano ${pctTxt(h.pb)}`;
+          tip.hidden = false;
+          const px = ev.clientX ?? alvo.getBoundingClientRect().left, py = ev.clientY ?? alvo.getBoundingClientRect().top;
+          const w = tip.offsetWidth, h2 = tip.offsetHeight;
+          tip.style.left = Math.min(window.innerWidth - w - 8, Math.max(8, px + 12)) + "px";
+          tip.style.top = Math.max(8, py - h2 - 12) + "px";
+        };
+        alvo.addEventListener("pointermove", mostrar);
+        alvo.addEventListener("pointerenter", mostrar);
+        alvo.addEventListener("pointerleave", () => { tip.hidden = true; guia.style.opacity = 0; });
+      });
+    });
+
+    // Tabela com os mesmos números (para leitores de tela e para conferir)
+    const cab = rodadas.map((r) => `<th class="n">R${r}</th>`).join("");
+    const linhas = times.map((t) => {
+      const cel = rodadas.map((r) => {
+        const h = hist.find((x) => x.time === t.time && x.r === r);
+        return `<td class="n">${h ? pctTxt(h.p1) + (h.pb !== null ? " · " + pctTxt(h.pb) : "") : "—"}</td>`;
+      }).join("");
+      return `<tr><td>${t.time}</td>${cel}</tr>`;
+    }).join("");
+    document.getElementById("evo-tabela").innerHTML =
+      `<table><thead><tr><th>Time (principal · bayesiano)</th>${cab}</tr></thead><tbody>${linhas}</tbody></table>`;
+  })();
+
+  // ---------- Hipóteses ----------
+  const hip = [
+    ["O mercado sabe mais do que os placares", "Um Elo corrigido pelas odds dos jogos passados errou menos em 10 de 10 temporadas e reduziu o erro de rebaixamento em 9%. Foi a maior melhora do projeto.", "yes", "Confirmada"],
+    ["Gols e odds juntos estimam melhor a força", "O bayesiano que só via gols errava 11% mais que o modelo principal. Quando a mesma força passou a explicar também as odds dos jogos passados, a diferença caiu para 1%, quase toda no começo do campeonato.", "yes", "Confirmada"],
+    ["A força muda dentro da temporada", "Só com gols, a mudança estimada é quase zero: os placares são ruidosos demais. Com as odds, ela aparece (0,065 por bloco de ~95 jogos) e melhora um pouco o bayesiano: Brier de 0,0736 para 0,0723.", "small-fx", "Ganho pequeno"],
+    ["Elenco caro rende mais do que o mercado espera", "O valor de mercado do início de cada temporada (2019–2026) piorou a previsão em todas as formas testadas. As odds já levam o elenco em conta desde o primeiro jogo.", "no", "Não acrescentou"],
+    ["Freguesia: o histórico do confronto importa", "Histórico do confronto direto, resultado do 1º turno e clássicos estaduais não melhoraram a previsão. A surpresa do 1º turno não se repete no returno: correlação de 0,01 em 2.778 pares.", "no", "Não acrescentou"],
+    ["O fator casa diminuiu", "Vitórias do mandante caíram de 50,9% (2012–16) para 46,9% (2021–25). O Elo confirma: a melhor vantagem de casa caiu de 100 para 80 pontos.", "yes", "Confirmada"],
+    ["Goleadas dizem mais que vitórias magras", "O Elo que considera o placar erra menos que o simples, no ajuste e nos anos de teste.", "yes", "Confirmada"],
+    ["Times em boa fase rendem mais", "Pontos e saldo nos últimos 5 jogos não melhoraram a previsão além do Elo, que já incorpora cada resultado recente.", "no", "Não acrescentou"],
+    ["Defesa vazada pesa na queda", "Gols sofridos nos últimos 5 jogos: melhora de 0,0001 ± 0,0002 no log loss, dentro do acaso.", "no", "Não acrescentou"],
+    ["Promovidos com pouca rodagem sofrem mais", "Temporadas na Série A nos últimos 10 anos não acrescentaram: o Elo já começa os promovidos com nota baixa.", "no", "Não acrescentou"],
+    ["Times ameaçados reagem no fim", "Na reta final, ameaçados fazem +0,09 ponto por jogo além do esperado e desenganados −0,20. A direção confirma, mas o efeito é pequeno demais para mudar as previsões.", "small-fx", "Efeito pequeno"],
+    ["Interações entre fatores", "O XGBoost com 19 features não superou a regressão logística. O Optuna preferiu árvores de profundidade 1, que não combinam features.", "no", "Não encontradas"],
+    ["O Elo comum estima mal a força dos times", "Com ele, o modelo era confiante demais e precisou de uma incerteza ajustada à mão. Com o Elo do mercado, sai calibrado sem ajuste nenhum.", "yes", "Confirmada"],
+  ];
+  const ledger = document.getElementById("ledger");
+  hip.forEach(([q, e, c, v]) => {
+    const row = document.createElement("div");
+    row.className = "hyp";
+    row.innerHTML = `<span class="q">${q}</span><p class="e">${e}</p><span class="chip ${c}">${v}</span>`;
+    ledger.appendChild(row);
+  });
+})();
+</script>
+
+</body>
+</html>
