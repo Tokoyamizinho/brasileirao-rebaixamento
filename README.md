@@ -2,7 +2,7 @@
 
 Probabilidade de rebaixamento de cada clube da Série A de 2026, atualizada a cada rodada por **dois modelos independentes**: uma regressão logística sobre um Elo corrigido pelas odds e um modelo hierárquico bayesiano de gols, em PyMC.
 
-**[Ver a página com as previsões atuais](https://tokoyamizinho.github.io/brasileirao-rebaixamento-2026/)**
+**[Ver a página com as previsões atuais](https://tokoyamizinho.github.io/brasileirao-rebaixamento/)**
 
 ## Como funciona
 
