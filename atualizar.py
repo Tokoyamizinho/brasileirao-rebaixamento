@@ -395,10 +395,16 @@ def publicar(rodada: int) -> None:
     r = git("pull", "--rebase", "--quiet")
     if r.returncode != 0:
         git("rebase", "--abort")
-        log("  AVISO: não consegui juntar com o que está no GitHub (conflito). Rode `git pull --rebase`\n"
-            "  no terminal, resolva o conflito e depois `git push`. Detalhe: "
-            + (r.stderr.strip().splitlines() or [""])[-1])
-        return
+        # Plano B: um merge que, em caso de conflito, fica com a versão do PC.
+        # Os arquivos gerados aqui são a fonte da verdade do projeto.
+        r = git("pull", "--no-rebase", "-X", "ours", "--no-edit", "--quiet")
+        if r.returncode != 0:
+            git("merge", "--abort")
+            log("  AVISO: não consegui juntar com o que está no GitHub (conflito). Rode\n"
+                "  `git pull --no-rebase -X ours --no-edit` e depois `git push`. Detalhe: "
+                + (r.stderr.strip().splitlines() or [""])[-1])
+            return
+        log("  juntei com uma mudança feita direto no GitHub (conflitos resolvidos com a versão do PC)")
     r = git("push")
     if r.returncode != 0:
         log("  AVISO: o push falhou (internet ou login do GitHub). O commit ficou salvo no PC;\n"
