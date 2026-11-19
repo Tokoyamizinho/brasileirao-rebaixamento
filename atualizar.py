@@ -385,10 +385,20 @@ def publicar(rodada: int) -> None:
         return
     git("add", "-A")
     if git("diff", "--cached", "--quiet").returncode == 0:
-        log("  nada mudou desde o último commit")
+        log("  nada novo para commit")
+    else:
+        r = git("commit", "-m", f"Atualização após a {rodada}ª rodada")
+        log("  " + (r.stdout + r.stderr).strip().splitlines()[0])
+    # Se alguém mudou algo direto no site do GitHub (ex.: editou o README), o
+    # push é recusado até trazermos essa mudança. O rebase põe os nossos
+    # commits por cima dela; se houver conflito, desfaz e avisa.
+    r = git("pull", "--rebase", "--quiet")
+    if r.returncode != 0:
+        git("rebase", "--abort")
+        log("  AVISO: não consegui juntar com o que está no GitHub (conflito). Rode `git pull --rebase`\n"
+            "  no terminal, resolva o conflito e depois `git push`. Detalhe: "
+            + (r.stderr.strip().splitlines() or [""])[-1])
         return
-    r = git("commit", "-m", f"Atualização após a {rodada}ª rodada")
-    log("  " + (r.stdout + r.stderr).strip().splitlines()[0])
     r = git("push")
     if r.returncode != 0:
         log("  AVISO: o push falhou (internet ou login do GitHub). O commit ficou salvo no PC;\n"
@@ -445,13 +455,22 @@ def main() -> int:
             if not args.sem_download:
                 # A base do GitHub (2003–2024) só precisa ser baixada uma vez
                 extra = [] if BASE_GITHUB.exists() else ["--conferir"]
-                saida = rodar("01_coleta_dados.py", "--forcar-download", *extra)
+                try:
+                    saida = rodar("01_coleta_dados.py", "--forcar-download", *extra)
+                except Falha:
+                    # Quedas momentâneas do site (timeout) são comuns: tenta mais uma vez
+                    log("  O download falhou; tentando de novo em 1 minuto...")
+                    import time
+                    time.sleep(60)
+                    saida = rodar("01_coleta_dados.py", "--forcar-download", *extra)
                 if "times não reconhecidos" in saida:
                     raise Falha("o football-data trouxe um nome de time desconhecido "
                                 "(veja o AVISO acima e acrescente em APELIDOS no 01)")
             resumo = conferir_dados()
             if not (args.forcar or tem_novidade(resumo)):
-                log("\nNenhum jogo novo desde a última atualização. Nada a fazer.")
+                log("\nNenhum jogo novo desde a última atualização. Nada a recalcular.")
+                if args.publicar:
+                    publicar(resumo["rodada"])   # envia commits que ficaram pendentes
                 return 0
 
             if precisa_preparar_modelo():
@@ -468,8 +487,15 @@ def main() -> int:
                 log("\nAjustando o bayesiano: costuma levar de 3 a 10 minutos, com alguns minutos "
                     "sem mostrar nada enquanto compila e amostra. Não feche a janela.")
                 saida = rodar("05_modelo_bayesiano.py", "--n", str(args.n), obrigatorio=False)
-                if "AVISO: o amostrador teve problemas" in saida:
-                    log("  AVISO: o bayesiano não convergiu bem nesta rodada; confira o log antes de confiar nele.")
+                # O 05 avisa já com r_hat > 1,01 (critério rigoroso). Aqui só alarma
+                # se for problema de verdade: r_hat > 1,02 ou alguma divergência.
+                diag_arq = PROCESSADOS / f"diagnostico{SUFIXO_BAYES}_{TEMPORADA}.json"
+                if diag_arq.exists():
+                    diag = json.loads(diag_arq.read_text(encoding="utf-8"))
+                    if diag.get("r_hat_max", 0) > 1.02 or diag.get("divergencias", 0) > 0:
+                        log("  AVISO: o bayesiano não convergiu bem nesta rodada "
+                            f"(r_hat {diag.get('r_hat_max')}, divergências {diag.get('divergencias')}); "
+                            "confira o log antes de confiar nele.")
         else:
             resumo = conferir_dados()
 
